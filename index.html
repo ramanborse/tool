@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YTConverterPro | YouTube to MP3/MP4 Converter</title>
+    <title>YTConverterPro | All-in-One YouTube Converter</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
     <style>
         * {
             margin: 0;
@@ -378,6 +380,17 @@
             100% { transform: rotate(360deg); }
         }
 
+        .error-message {
+            display: none;
+            background: rgba(204, 0, 0, 0.2);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            color: var(--light);
+        }
+
         /* Middle ad section */
         .middle-ad {
             background: var(--ad-bg);
@@ -601,13 +614,18 @@
                 </div>
             </div>
 
-            <div class="loading">
+            <div class="loading" id="loading">
                 <div class="spinner"></div>
                 <p>Processing your video. This may take a moment...</p>
             </div>
 
-            <div class="result-section">
-                <img src="" alt="Video thumbnail" class="thumbnail">
+            <div class="error-message" id="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p id="error-text">Error message will appear here</p>
+            </div>
+
+            <div class="result-section" id="result-section">
+                <img id="thumbnail" src="" alt="Video thumbnail" class="thumbnail">
                 <div class="video-info">
                     <h2 id="video-title">Video Title</h2>
                     <p><i class="fas fa-clock"></i> Duration: <span id="video-duration">0:00</span> | <i class="fas fa-hd"></i> Quality: <span id="video-quality">1080p</span></p>
@@ -666,125 +684,265 @@
             <p><strong>Disclaimer:</strong> YTConverterPro is intended for personal use only. Users are responsible for ensuring they have the right to download and convert content from YouTube. Please respect copyright laws.</p>
         </div>
         <p>&copy; 2023 YTConverterPro. All rights reserved.</p>
-        <p>This is a front-end demonstration. Actual conversion requires backend implementation.</p>
+        <p>This is a frontend simulation. Actual conversion requires a backend server.</p>
     </footer>
 
+    <!-- PyScript Backend Simulation -->
+    <py-config>
+        packages = ["js"]
+    </py-config>
+    <py-script>
+        import js
+        import random
+        import time
+        from js import document, console
+
+        # Sample video data for simulation
+        videos = [
+            {
+                "title": "Never Gonna Give You Up",
+                "duration": "3:32",
+                "quality": "1080p",
+                "channel": "Rick Astley",
+                "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+                "mp4": "#",
+                "mp3": "#"
+            },
+            {
+                "title": "Shape of You - Ed Sheeran",
+                "duration": "3:54",
+                "quality": "1080p",
+                "channel": "Ed Sheeran",
+                "thumbnail": "https://i.ytimg.com/vi/JGwWNGJdvx8/maxresdefault.jpg",
+                "mp4": "#",
+                "mp3": "#"
+            },
+            {
+                "title": "Gangnam Style - PSY",
+                "duration": "4:13",
+                "quality": "1080p",
+                "channel": "officialpsy",
+                "thumbnail": "https://i.ytimg.com/vi/9bZkp7q19f0/maxresdefault.jpg",
+                "mp4": "#",
+                "mp3": "#"
+            }
+        ]
+
+        def show_loading(show):
+            loading = document.getElementById("loading")
+            loading.style.display = "block" if show else "none"
+
+        def show_error(message):
+            error_message = document.getElementById("error-message")
+            error_text = document.getElementById("error-text")
+            error_text.innerText = message
+            error_message.style.display = "block"
+
+        def hide_error():
+            error_message = document.getElementById("error-message")
+            error_message.style.display = "none"
+
+        def show_result():
+            result_section = document.getElementById("result-section")
+            result_section.style.display = "block"
+
+        def update_video_info(video, format_type):
+            document.getElementById("video-title").innerText = video["title"]
+            document.getElementById("video-duration").innerText = video["duration"]
+            document.getElementById("video-quality").innerText = video["quality"]
+            document.getElementById("video-channel").innerText = video["channel"]
+            document.getElementById("thumbnail").src = video["thumbnail"]
+            
+            download_link = document.getElementById("download-link")
+            download_link.innerHTML = f'<i class="fas fa-download"></i> Download {format_type.upper()}'
+            download_link.href = video[format_type]
+            download_link.download = f"{video['title'].replace(' ', '_')}.{format_type}"
+
+        def convert_video():
+            url = document.getElementById("video-url").value.strip()
+            if not url:
+                show_error("Please enter a YouTube URL")
+                return
+            
+            if "youtube.com/" not in url and "youtu.be/" not in url:
+                show_error("Please enter a valid YouTube URL")
+                return
+            
+            # Get selected format
+            selected_type = "mp4"
+            option_cards = document.querySelectorAll(".option-card")
+            for card in option_cards:
+                if "active" in card.classList:
+                    selected_type = card.getAttribute("data-type")
+                    break
+            
+            # UI updates
+            hide_error()
+            show_loading(True)
+            document.getElementById("result-section").style.display = "none"
+            
+            # Simulate conversion delay
+            time.sleep(2)
+            
+            # Randomly select a video for demo
+            random_video = random.choice(videos)
+            
+            # Update UI
+            update_video_info(random_video, selected_type)
+            show_loading(False)
+            show_result()
+
+        # Set up event listeners
+        def setup_event_listeners():
+            # Option selection
+            option_cards = document.querySelectorAll(".option-card")
+            for card in option_cards:
+                card.addEventListener("click", lambda e: 
+                    [c.classList.remove("active") for c in option_cards] or 
+                    e.currentTarget.classList.add("active")
+                )
+            
+            # Convert button
+            document.getElementById("convert-btn").addEventListener("click", convert_video)
+            
+            # Ad click handlers
+            ads = document.querySelectorAll(".top-ad, .ad-sidebar, .middle-ad, .footer-ad")
+            for ad in ads:
+                ad.addEventListener("click", lambda: js.alert("Ad clicked! In a real implementation, this would redirect to the advertiser."))
+
+        # Initialize when page loads
+        setup_event_listeners()
+    </py-script>
+
     <script>
+        // JavaScript fallback for PyScript functionality
         document.addEventListener('DOMContentLoaded', function() {
-            const convertBtn = document.getElementById('convert-btn');
-            const videoUrl = document.getElementById('video-url');
-            const optionCards = document.querySelectorAll('.option-card');
-            const loading = document.querySelector('.loading');
-            const resultSection = document.querySelector('.result-section');
-            const downloadLink = document.getElementById('download-link');
-            const videoTitle = document.getElementById('video-title');
-            const videoDuration = document.getElementById('video-duration');
-            const videoQuality = document.getElementById('video-quality');
-            const videoChannel = document.getElementById('video-channel');
-            const thumbnail = document.querySelector('.thumbnail');
-            let selectedType = 'mp4';
-            
-            // Sample video data
-            const videos = [
-                {
-                    title: "Never Gonna Give You Up",
-                    duration: "3:32",
-                    quality: "1080p",
-                    channel: "Rick Astley",
-                    thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-                    mp4: "https://example.com/downloads/never_gonna_give_you_up.mp4",
-                    mp3: "https://example.com/downloads/never_gonna_give_you_up.mp3"
-                },
-                {
-                    title: "Shape of You - Ed Sheeran",
-                    duration: "3:54",
-                    quality: "1080p",
-                    channel: "Ed Sheeran",
-                    thumbnail: "https://i.ytimg.com/vi/JGwWNGJdvx8/maxresdefault.jpg",
-                    mp4: "https://example.com/downloads/shape_of_you.mp4",
-                    mp3: "https://example.com/downloads/shape_of_you.mp3"
-                },
-                {
-                    title: "Gangnam Style - PSY",
-                    duration: "4:13",
-                    quality: "1080p",
-                    channel: "officialpsy",
-                    thumbnail: "https://i.ytimg.com/vi/9bZkp7q19f0/maxresdefault.jpg",
-                    mp4: "https://example.com/downloads/gangnam_style.mp4",
-                    mp3: "https://example.com/downloads/gangnam_style.mp3"
-                }
-            ];
-
-            // Option selection
-            optionCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    optionCards.forEach(c => c.classList.remove('active'));
-                    card.classList.add('active');
-                    selectedType = card.dataset.type;
-                });
-            });
-
-            // Convert button functionality
-            convertBtn.addEventListener('click', () => {
-                const url = videoUrl.value.trim();
+            // If PyScript doesn't load, use JavaScript simulation
+            if (!window.pyodide) {
+                console.log("PyScript not loaded, using JavaScript simulation");
                 
-                if (!url) {
-                    alert('Please enter a YouTube URL');
-                    return;
-                }
-                
-                // Simple URL validation
-                if (!url.includes('youtube.com/') && !url.includes('youtu.be/')) {
-                    alert('Please enter a valid YouTube URL');
-                    return;
-                }
-                
-                // Show loading animation
-                loading.style.display = 'block';
-                resultSection.style.display = 'none';
-                
-                // Simulate conversion process
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                    resultSection.style.display = 'block';
-                    
-                    // Randomly select a video for demo
-                    const randomVideo = videos[Math.floor(Math.random() * videos.length)];
-                    
-                    // Update video info
-                    videoTitle.textContent = randomVideo.title;
-                    videoDuration.textContent = randomVideo.duration;
-                    videoQuality.textContent = randomVideo.quality;
-                    videoChannel.textContent = randomVideo.channel;
-                    thumbnail.src = randomVideo.thumbnail;
-                    
-                    // Update download link based on selection
-                    downloadLink.innerHTML = `<i class="fas fa-download"></i> Download ${selectedType.toUpperCase()}`;
-                    downloadLink.href = selectedType === 'mp4' ? randomVideo.mp4 : randomVideo.mp3;
-                    downloadLink.download = `${randomVideo.title.replace(/\s+/g, '_')}.${selectedType}`;
-                    
-                }, 2000);
-            });
-
-            // Simulate thumbnail on URL paste
-            videoUrl.addEventListener('paste', function() {
-                setTimeout(() => {
-                    if (videoUrl.value.includes('youtube.com/') || videoUrl.value.includes('youtu.be/')) {
-                        // Animation effect
-                        convertBtn.style.animation = 'pulse 1s';
-                        setTimeout(() => {
-                            convertBtn.style.animation = '';
-                        }, 1000);
+                // Sample video data
+                const videos = [
+                    {
+                        title: "Never Gonna Give You Up",
+                        duration: "3:32",
+                        quality: "1080p",
+                        channel: "Rick Astley",
+                        thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+                        mp4: "#",
+                        mp3: "#"
+                    },
+                    {
+                        title: "Shape of You - Ed Sheeran",
+                        duration: "3:54",
+                        quality: "1080p",
+                        channel: "Ed Sheeran",
+                        thumbnail: "https://i.ytimg.com/vi/JGwWNGJdvx8/maxresdefault.jpg",
+                        mp4: "#",
+                        mp3: "#"
+                    },
+                    {
+                        title: "Gangnam Style - PSY",
+                        duration: "4:13",
+                        quality: "1080p",
+                        channel: "officialpsy",
+                        thumbnail: "https://i.ytimg.com/vi/9bZkp7q19f0/maxresdefault.jpg",
+                        mp4: "#",
+                        mp3: "#"
                     }
-                }, 100);
-            });
-            
-            // Ad click handlers
-            document.querySelectorAll('.top-ad, .ad-sidebar, .middle-ad, .footer-ad').forEach(ad => {
-                ad.addEventListener('click', function() {
-                    alert('Ad clicked! In a real implementation, this would redirect to the advertiser.');
+                ];
+                
+                // UI Functions
+                function showLoading(show) {
+                    const loading = document.getElementById("loading");
+                    loading.style.display = show ? "block" : "none";
+                }
+                
+                function showError(message) {
+                    const errorMessage = document.getElementById("error-message");
+                    const errorText = document.getElementById("error-text");
+                    errorText.textContent = message;
+                    errorMessage.style.display = "block";
+                }
+                
+                function hideError() {
+                    const errorMessage = document.getElementById("error-message");
+                    errorMessage.style.display = "none";
+                }
+                
+                function showResult() {
+                    const resultSection = document.getElementById("result-section");
+                    resultSection.style.display = "block";
+                }
+                
+                function updateVideoInfo(video, formatType) {
+                    document.getElementById("video-title").textContent = video.title;
+                    document.getElementById("video-duration").textContent = video.duration;
+                    document.getElementById("video-quality").textContent = video.quality;
+                    document.getElementById("video-channel").textContent = video.channel;
+                    document.getElementById("thumbnail").src = video.thumbnail;
+                    
+                    const downloadLink = document.getElementById("download-link");
+                    downloadLink.innerHTML = `<i class="fas fa-download"></i> Download ${formatType.toUpperCase()}`;
+                    downloadLink.href = video[formatType];
+                    downloadLink.download = `${video.title.replace(/\s+/g, '_')}.${formatType}`;
+                }
+                
+                // Conversion function
+                function convertVideo() {
+                    const url = document.getElementById("video-url").value.trim();
+                    if (!url) {
+                        showError("Please enter a YouTube URL");
+                        return;
+                    }
+                    
+                    if (!url.includes('youtube.com/') && !url.includes('youtu.be/')) {
+                        showError("Please enter a valid YouTube URL");
+                        return;
+                    }
+                    
+                    // Get selected format
+                    let selectedType = "mp4";
+                    const optionCards = document.querySelectorAll(".option-card");
+                    for (const card of optionCards) {
+                        if (card.classList.contains("active")) {
+                            selectedType = card.dataset.type;
+                            break;
+                        }
+                    }
+                    
+                    // UI updates
+                    hideError();
+                    showLoading(true);
+                    document.getElementById("result-section").style.display = "none";
+                    
+                    // Simulate conversion delay
+                    setTimeout(() => {
+                        const randomVideo = videos[Math.floor(Math.random() * videos.length)];
+                        updateVideoInfo(randomVideo, selectedType);
+                        showLoading(false);
+                        showResult();
+                    }, 2000);
+                }
+                
+                // Set up event listeners
+                const optionCards = document.querySelectorAll(".option-card");
+                optionCards.forEach(card => {
+                    card.addEventListener("click", () => {
+                        optionCards.forEach(c => c.classList.remove("active"));
+                        card.classList.add("active");
+                    });
                 });
-            });
+                
+                document.getElementById("convert-btn").addEventListener("click", convertVideo);
+                
+                // Ad click handlers
+                document.querySelectorAll(".top-ad, .ad-sidebar, .middle-ad, .footer-ad").forEach(ad => {
+                    ad.addEventListener("click", () => {
+                        alert("Ad clicked! In a real implementation, this would redirect to the advertiser.");
+                    });
+                });
+            }
         });
     </script>
 </body>
